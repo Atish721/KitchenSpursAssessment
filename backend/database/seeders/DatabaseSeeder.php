@@ -2,36 +2,22 @@
 
 namespace Database\Seeders;
 
-use App\Models\Restaurant;
-use App\Models\Order;
+use App\Models\User;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
     {
-        // Seed restaurants
-        $restaurants = [
-            ['id' => 101, 'name' => 'Tandoori Treats', 'location' => 'Bangalore', 'cuisine' => 'North Indian'],
-            ['id' => 102, 'name' => 'Sushi Bay', 'location' => 'Mumbai', 'cuisine' => 'Japanese'],
-            ['id' => 103, 'name' => 'Pasta Palace', 'location' => 'Delhi', 'cuisine' => 'Italian'],
-            ['id' => 104, 'name' => 'Burger Hub', 'location' => 'Hyderabad', 'cuisine' => 'American'],
-        ];
+        // User::factory(10)->create();
 
-        foreach ($restaurants as $restaurant) {
-            Restaurant::create($restaurant);
-        }
-
-        // Seed orders (using the provided data)
-        $orders = json_decode(file_get_contents(database_path('data/orders.json')), true);
-        
-        foreach ($orders as $order) {
-            Order::create([
-                'restaurant_id' => $order['restaurant_id'],
-                'order_amount' => $order['order_amount'],
-                'order_time' => Carbon::parse($order['order_time']),
-            ]);
-        }
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 }
