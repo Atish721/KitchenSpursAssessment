@@ -9,7 +9,9 @@ class Restaurant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'location', 'cuisine'];
+    protected $fillable = ['id', 'name', 'location', 'cuisine'];
+    public $incrementing = false;
+    protected $keyType = 'int';
 
     public function orders()
     {

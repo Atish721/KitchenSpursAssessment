@@ -1,16 +1,88 @@
-# React + Vite
+# Restaurant Analytics Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack analytics dashboard for restaurant order trends built with Laravel backend and React frontend (Vite).
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- View and search restaurants with filtering and sorting
+- Restaurant-specific analytics with date range selection
+- Daily orders, revenue, average order value, and peak hour trends
+- Top 3 restaurants by revenue
+- Advanced filtering capabilities
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Backend:** Laravel 10, PHP 8.1+
+**Frontend:** React 18, Vite, Chart.js, Fetch API
+**Database:** SQLite
 
-## Expanding the ESLint configuration
+## Setup Instructions
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Backend Setup
+
+1. Navigate to backend directory:
+```bash
+cd backend
+```
+
+2. Install dependencies:
+```bash
+composer install
+```
+
+3. Configure environment:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+4. Create SQLite database:
+```bash
+touch database/database.sqlite
+```
+
+5. Update .env file:
+```bash
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/restaurant-analytics/database/database.sqlite
+```
+
+6. Run migrations and seed data:
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+7. Start development server:
+```bash
+php artisan serve
+```
+
+Backend will run on http://localhost:8000
+
+### Frontend Setup (Vite)
+
+1. Navigate to frontend directory:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start development server:
+```bash
+npm run dev
+```
+
+Frontend will run on http://localhost:5173
+
+### API Endpoints
+
+- **GET /api/restaurants -** List restaurants with search/filter
+- **GET /api/restaurants/{id} -** Get restaurant details
+- **GET /api/analytics/restaurant/{id}/trends -** Restaurant order trends
+- **GET /api/analytics/top-restaurants -** Top 3 restaurants by revenue
+- **GET /api/analytics/filtered -** Filtered analytics data
