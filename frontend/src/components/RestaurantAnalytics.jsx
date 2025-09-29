@@ -56,7 +56,7 @@ const RestaurantAnalytics = () => {
         datasets: [
             {
                 label: 'Daily Orders',
-                data: trends.trends.map(t => t.orders_count),
+                data: trends.trends.map(t => t.ordersCount),
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
             },
@@ -115,15 +115,15 @@ const RestaurantAnalytics = () => {
             <div className="summary-cards">
                 <div className="summary-card">
                     <h3>Total Orders</h3>
-                    <p>{trends.summary.total_orders}</p>
+                    <p>{trends.summary.totalOrders}</p>
                 </div>
                 <div className="summary-card">
                     <h3>Total Revenue</h3>
-                    <p>₹{trends.summary.total_revenue?.toFixed(2)}</p>
+                    <p>₹{trends.summary.totalRevenue?.toFixed(2)}</p>
                 </div>
                 <div className="summary-card">
                     <h3>Avg Order Value</h3>
-                    <p>₹{trends.summary.avg_order_value?.toFixed(2)}</p>
+                    <p>₹{trends.summary.avgOrderValue?.toFixed(2)}</p>
                 </div>
             </div>
 
@@ -149,10 +149,10 @@ const RestaurantAnalytics = () => {
                     {trends.trends.map((day, index) => (
                         <tr key={index}>
                             <td>{day.date}</td>
-                            <td>{day.orders_count}</td>
+                            <td>{day.ordersCount}</td>
                             <td>₹{day.revenue?.toFixed(2)}</td>
-                            <td>₹{day.avg_order_value?.toFixed(2)}</td>
-                            <td>{day.peak_hour}:00</td>
+                            <td>₹{day.avgOrderValue?.toFixed(2)}</td>
+                            <td>{day.peakHour}:00</td>
                         </tr>
                     ))}
                 </tbody>
