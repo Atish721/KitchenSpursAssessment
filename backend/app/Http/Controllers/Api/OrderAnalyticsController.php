@@ -22,32 +22,33 @@ class OrderAnalyticsController extends Controller
         $endDate = $request->end_date;
         
         $dailyData = DB::select("
-            SELECT 
+            select 
                 dates.date as date,
-                COUNT(o.id) as ordersCount,
-                COALESCE(SUM(o.order_amount), 0) as revenue,
-                COALESCE(AVG(o.order_amount), 0) as avgOrderValue,
+                count(o.id) as ordersCount,
+                coalesce(sum(o.order_amount), 0) as revenue,
+                coalesce(avg(o.order_amount), 0) as avgOrderValue,
                 (
-                    SELECT hour(order_time)
-                    FROM orders 
-                    WHERE restaurant_id = ? 
-                    AND DATE(order_time) = dates.date
-                    GROUP BY hour(order_time)
-                    ORDER BY COUNT(*) DESC
-                    LIMIT 1
+                    select hour(order_time)
+                    from orders 
+                    where restaurant_id = ? 
+                    and date(order_time) = dates.date
+                    group by hour(order_time)
+                    order by count(*) desc
+                    limit 1
                 ) as peakHour
-            FROM (
-                SELECT DISTINCT DATE(order_time) as date
-                FROM orders
-                WHERE restaurant_id = ?
-                AND order_time BETWEEN ? AND ?
+            from (
+                select distinct date(order_time) as date
+                from orders
+                where restaurant_id = ?
+                and order_time between ? and ?
             ) as dates
-            LEFT JOIN orders o ON DATE(o.order_time) = dates.date AND o.restaurant_id = ?
-            GROUP BY dates.date
-            ORDER BY dates.date
+            left join orders o on date(o.order_time) = dates.date and o.restaurant_id = ?
+            group by dates.date
+            order by dates.date
         ", [$restaurantId, $restaurantId, $startDate, $endDate, $restaurantId]);
         
-        // Convert string values to numbers
+    
+        
         $dailyData = array_map(function($item) {
             return [
                 'date' => $item->date,
@@ -59,18 +60,19 @@ class OrderAnalyticsController extends Controller
         }, $dailyData);
         
         $summary = DB::select("
-            SELECT 
-                COUNT(*) as totalOrders, 
-                COALESCE(SUM(order_amount), 0) as totalRevenue, 
-                COALESCE(AVG(order_amount), 0) as avgOrderValue 
-            FROM orders 
-            WHERE restaurant_id = ?
-            AND order_time BETWEEN ? AND ?
+            select 
+                count(*) as totalOrders, 
+                coalesce(sum(order_amount), 0) as totalRevenue, 
+                coalesce(avg(order_amount), 0) as avgOrderValue 
+            from orders 
+            where restaurant_id = ?
+            and order_time between ? and ?
         ", [$restaurantId, $startDate, $endDate]);
         
         $summary = $summary[0] ?? [];
         
-        // Convert summary values to numbers
+ 
+        
         if ($summary) {
             $summary = [
                 'totalOrders' => (int) $summary->totalOrders,
@@ -94,22 +96,22 @@ class OrderAnalyticsController extends Controller
         ]);
         
         $startDate = $request->start_date;
-        $endDate = $request->end_date; // Fixed: was $request->endDate
+        $endDate = $request->end_date;
         
         $topRestaurants = DB::select("
-            SELECT 
+            select 
                 r.id as restaurantId, 
                 r.name as restaurantName, 
-                r.location as restaurantLocation,  -- Changed: address → location
+                r.location as restaurantLocation, 
                 COUNT(o.id) as totalOrders,
-                COALESCE(SUM(o.order_amount), 0) as totalRevenue, 
-                COALESCE(AVG(o.order_amount), 0) as avgOrderValue
-            FROM restaurants r
-            INNER JOIN orders o ON r.id = o.restaurant_id
-            WHERE o.order_time BETWEEN ? AND ?
-            GROUP BY r.id, r.name, r.location  -- Changed: address → location
-            ORDER BY totalRevenue DESC
-            LIMIT 3
+                coalesce(sum(o.order_amount), 0) as totalRevenue, 
+                coalesce(avg(o.order_amount), 0) as avgOrderValue
+            from restaurants r
+            inner join orders o ON r.id = o.restaurant_id
+            where o.order_time between ? and ?
+            group by r.id, r.name, r.location
+            order by totalRevenue desc
+            limit 3
         ", [$startDate, $endDate]);
         
         $formattedResults = array_map(function($item) {
@@ -117,9 +119,9 @@ class OrderAnalyticsController extends Controller
                 'restaurant' => [
                     'id' => $item->restaurantId,
                     'name' => $item->restaurantName,
-                    'location' => $item->restaurantLocation, // Changed: address → location
+                    'location' => $item->restaurantLocation,
                 ],
-                'total_revenue' => (float) $item->totalRevenue, // Fixed: was $item->total_revenue
+                'total_revenue' => (float) $item->totalRevenue, 
                 'total_orders' => (int) $item->totalOrders,
                 'avg_order_value' => (float) $item->avgOrderValue,
             ];
@@ -130,50 +132,50 @@ class OrderAnalyticsController extends Controller
     
     public function filteredAnalytics(Request $request)
     {
-        $query = "SELECT o.*, r.name as restaurantName, r.location as restaurantLocation  -- Changed: address → location
-            FROM orders o
-            LEFT JOIN restaurants r ON o.restaurant_id = r.id
-            WHERE 1=1
+        $query = "select o.*, r.name as restaurantName, r.location as restaurantLocation
+            from orders o
+            left join restaurants r on o.restaurant_id = r.id
+            where 1=1
         ";
         
         $params = [];
         
         if ($request->has('start_date') && $request->has('end_date')) {
-            $query .= " AND o.order_time BETWEEN ? AND ?";
+            $query .= " and o.order_time between ? and ?";
             $params[] = $request->start_date;
             $params[] = $request->end_date;
         }
         
         if ($request->has('restaurant_id') && $request->restaurant_id) {
-            $query .= " AND o.restaurant_id = ?";
+            $query .= " and o.restaurant_id = ?";
             $params[] = $request->restaurant_id;
         }
         
         if ($request->has('min_amount') && $request->min_amount) {
-            $query .= " AND o.order_amount >= ?";
+            $query .= " and o.order_amount >= ?";
             $params[] = $request->min_amount;
         }
         if ($request->has('max_amount') && $request->max_amount) {
-            $query .= " AND o.order_amount <= ?";
+            $query .= " and o.order_amount <= ?";
             $params[] = $request->max_amount;
         }
 
         if ($request->has('start_hour') && $request->has('end_hour')) {
-            $query .= " AND HOUR(o.order_time) BETWEEN ? AND ?";
+            $query .= " and hour(o.order_time) between ? and ?";
             $params[] = $request->start_hour;
             $params[] = $request->end_hour;
         }
         
-        $query .= " ORDER BY o.order_time DESC";
+        $query .= " order by o.order_time desc";
         
-        $countQuery = "SELECT COUNT(*) as total FROM (" . str_replace('o.*, r.name as restaurantName, r.location as restaurantLocation', 'o.id', $query) . ") as countTable";
+        $countQuery = "select count(*) as total from (" . str_replace('o.*, r.name as restaurantName, r.location as restaurantLocation', 'o.id', $query) . ") as countTable";
         $total = DB::select($countQuery, $params)[0]->total;
         
         $perPage = $request->get('per_page', 20);
         $page = $request->get('page', 1);
         $offset = ($page - 1) * $perPage;
         
-        $query .= " LIMIT ? OFFSET ?";
+        $query .= " limit ? offset ?";
         $params[] = $perPage;
         $params[] = $offset;
         
@@ -182,13 +184,13 @@ class OrderAnalyticsController extends Controller
         $formattedResults = array_map(function($item) {
             return [
                 'id' => $item->id,
-                'restaurant_id' => $item->restaurant_id, // Fixed: was restaurantId
-                'order_time' => $item->order_time, // Fixed: was orderTime
-                'order_amount' => $item->order_amount, // Fixed: was orderAmount
+                'restaurant_id' => $item->restaurant_id,  
+                'order_time' => $item->order_time, 
+                'order_amount' => $item->order_amount, 
                 'restaurant' => [
-                    'id' => $item->restaurant_id, // Fixed: was restaurantId
+                    'id' => $item->restaurant_id, 
                     'name' => $item->restaurantName,
-                    'location' => $item->restaurantLocation, // Changed: address → location
+                    'location' => $item->restaurantLocation,
                 ]
             ];
         }, $results);

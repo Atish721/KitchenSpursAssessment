@@ -36,24 +36,18 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-4. Create SQLite database:
+4. Update .env file:
 ```bash
-touch database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=im56gv.h.filess.io
+DB_PORT=61002
+DB_DATABASE=KitchenSpurs_prettyyes
+DB_USERNAME=KitchenSpurs_prettyyes
+DB_PASSWORD=4dc3ad94833cdf7123b945f31e73761d05b3beb2
+SESSION_DRIVER=file
 ```
 
-5. Update .env file:
-```bash
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/restaurant-analytics/database/database.sqlite
-```
-
-6. Run migrations and seed data:
-```bash
-php artisan migrate
-php artisan db:seed
-```
-
-7. Start development server:
+5. Start development server:
 ```bash
 php artisan serve
 ```
@@ -86,3 +80,4 @@ Frontend will run on http://localhost:5173
 - **GET /api/analytics/restaurant/{id}/trends -** Restaurant order trends
 - **GET /api/analytics/top-restaurants -** Top 3 restaurants by revenue
 - **GET /api/analytics/filtered -** Filtered analytics data
+

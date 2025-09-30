@@ -8,43 +8,84 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
     {
         try {
-            $query = DB::table('restaurants')
-                ->select('id', 'name', 'location', 'cuisine');
-            
-            // Search
+            $whereConditions = [];
+            $params = [];
+
+       
             if ($request->has('search') && $request->search) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('location', 'like', "%{$search}%")
-                      ->orWhere('cuisine', 'like', "%{$search}%");
-                });
+                $whereConditions[] = "(name like ? or location like ? or cuisine like ?)";
+                $params[] = "%{$search}%";
+                $params[] = "%{$search}%";
+                $params[] = "%{$search}%";
             }
             
-            // Filter by cuisine
+         
             if ($request->has('cuisine') && $request->cuisine) {
-                $query->where('cuisine', $request->cuisine);
+                $whereConditions[] = "cuisine = ?";
+                $params[] = $request->cuisine;
             }
             
-            // Filter by location
+        
             if ($request->has('location') && $request->location) {
-                $query->where('location', $request->location);
+                $whereConditions[] = "location = ?";
+                $params[] = $request->location;
             }
+
             
-            // Sorting
+            $whereClause = "";
+            if (!empty($whereConditions)) {
+                $whereClause = " where " . implode(" AND ", $whereConditions);
+            }
+
+           
             $sortBy = $request->get('sort_by', 'name');
             $sortOrder = $request->get('sort_order', 'asc');
-            $query->orderBy($sortBy, $sortOrder);
+            $allowedSortColumns = ['name', 'location', 'cuisine'];
+            $sortBy = in_array($sortBy, $allowedSortColumns) ? $sortBy : 'name';
+            $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
+
+          
+            $perPage = $request->get('per_page', 10);
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $perPage;
+
+           
+            $query = "
+                select id, name, location, cuisine from restaurants
+                {$whereClause}
+                order by {$sortBy} {$sortOrder}
+                limit ? offset ?
+            ";
+
+            $params[] = $perPage;
+            $params[] = $offset;
+
+            $restaurants = DB::select($query, $params);
             
-            $restaurants = $query->get();
-            
+           
+            $totalResult = DB::select("select FOUND_ROWS() as total");
+            $total = $totalResult[0]->total;
+
+          
+            $lastPage = ceil($total / $perPage);
+            $from = ($page - 1) * $perPage + 1;
+            $to = min($page * $perPage, $total);
+
             return response()->json([
                 'success' => true,
                 'data' => $restaurants,
-                'total' => $restaurants->count()
+                'pagination' => [
+                    'current_page' => (int)$page,
+                    'per_page' => (int)$perPage,
+                    'total' => (int)$total,
+                    'last_page' => (int)$lastPage,
+                    'from' => (int)$from,
+                    'to' => (int)$to,
+                ]
             ]);
             
         } catch (\Exception $e) {
@@ -59,28 +100,37 @@ class RestaurantController extends Controller
     public function show($id)
     {
         try {
-            $restaurant = DB::table('restaurants')->where('id', $id)->first();
+           
+            $restaurantQuery = "select id, name, location, cuisine from restaurants where id = ?";
+            $restaurantResult = DB::select($restaurantQuery, [$id]);
             
-            if (!$restaurant) {
+            if (empty($restaurantResult)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Restaurant not found'
                 ], 404);
             }
             
-            // Get orders for this restaurant
-            $orders = DB::table('orders')
-                ->where('restaurant_id', $id)
-                ->select('id', 'order_amount', 'order_time')
-                ->get();
+            $restaurant = $restaurantResult[0];
+            
+       
+            $ordersQuery = "select id, order_amount, order_time from orders where restaurant_id = ? order by order_time desc";
+            $orders = DB::select($ordersQuery, [$id]);
+            
+       
+            $ordersCount = count($orders);
+            $totalRevenue = 0;
+            foreach ($orders as $order) {
+                $totalRevenue += $order->order_amount;
+            }
             
             return response()->json([
                 'success' => true,
                 'data' => [
                     'restaurant' => $restaurant,
                     'orders' => $orders,
-                    'orders_count' => $orders->count(),
-                    'total_revenue' => $orders->sum('order_amount')
+                    'orders_count' => $ordersCount,
+                    'total_revenue' => $totalRevenue
                 ]
             ]);
             

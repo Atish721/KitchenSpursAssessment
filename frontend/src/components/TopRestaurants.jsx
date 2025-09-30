@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { apiService } from '../services/api';
+import { useDebounce } from '../hooks/useDebounce';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -11,7 +12,7 @@ import {
     Legend,
 } from 'chart.js';
 
-// Register ChartJS components
+
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -27,14 +28,17 @@ const TopRestaurants = () => {
     const [startDate, setStartDate] = useState('2025-06-22');
     const [endDate, setEndDate] = useState('2025-06-28');
 
+    const debounceStartDate = useDebounce(startDate, 500)
+    const debounceEndDate = useDebounce(endDate, 500)
+
     useEffect(() => {
         fetchTopRestaurants();
-    }, [startDate, endDate]);
+    }, [debounceStartDate, debounceEndDate]);
 
     const fetchTopRestaurants = async () => {
         setLoading(true);
         try {
-            const response = await apiService.getTopRestaurants(startDate, endDate);
+            const response = await apiService.getTopRestaurants(debounceStartDate, debounceEndDate);
             setTopRestaurants(response);
         } catch (error) {
             console.error('Error fetching top restaurants:', error);
@@ -55,7 +59,7 @@ const TopRestaurants = () => {
             },
             tooltip: {
                 callbacks: {
-                    label: function(context) {
+                    label: function (context) {
                         return `Revenue: ₹${context.raw.toLocaleString('en-IN')}`;
                     }
                 }
@@ -65,7 +69,7 @@ const TopRestaurants = () => {
             y: {
                 beginAtZero: true,
                 ticks: {
-                    callback: function(value) {
+                    callback: function (value) {
                         return '₹' + value.toLocaleString('en-IN');
                     }
                 }
@@ -106,7 +110,7 @@ const TopRestaurants = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        style={{ marginLeft: '5px', padding: '5px' }}
+                        style={{ marginLeft: '5px' }}
                     />
                 </label>
                 <label style={{ marginRight: '10px' }}>
@@ -115,10 +119,10 @@ const TopRestaurants = () => {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        style={{ marginLeft: '5px', padding: '5px' }}
+                        style={{ marginLeft: '5px' }}
                     />
                 </label>
-                <button 
+                <button
                     onClick={fetchTopRestaurants}
                     style={{ padding: '5px 10px', marginLeft: '10px' }}
                 >
@@ -138,8 +142,8 @@ const TopRestaurants = () => {
             {/* Restaurants List */}
             <div className="top-restaurants-list" style={{ display: 'grid', gap: '20px' }}>
                 {topRestaurants.map((item, index) => (
-                    <div 
-                        key={item.restaurant.id} 
+                    <div
+                        key={item.restaurant.id}
                         className="top-restaurant-card"
                         style={{
                             border: '1px solid #ddd',
@@ -148,10 +152,10 @@ const TopRestaurants = () => {
                             backgroundColor: index === 0 ? '#fff3cd' : '#f8f9fa'
                         }}
                     >
-                        <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            marginBottom: '15px' 
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            marginBottom: '15px'
                         }}>
                             <div style={{
                                 backgroundColor: index === 0 ? '#ffc107' : index === 1 ? '#6c757d' : '#fd7e14',
@@ -172,7 +176,7 @@ const TopRestaurants = () => {
                                 <p style={{ margin: 0, color: '#666' }}>{item.restaurant.location}</p>
                             </div>
                         </div>
-                        
+
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
                             <div>
                                 <strong>Revenue</strong>
@@ -198,9 +202,9 @@ const TopRestaurants = () => {
             </div>
 
             {!loading && topRestaurants.length === 0 && (
-                <div className="no-data" style={{ 
-                    textAlign: 'center', 
-                    padding: '40px', 
+                <div className="no-data" style={{
+                    textAlign: 'center',
+                    padding: '40px',
                     color: '#666',
                     fontSize: '1.1em'
                 }}>
