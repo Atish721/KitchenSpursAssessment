@@ -9,7 +9,8 @@ const handleResponse = async (response) => {
 };
 
 export const apiService = {
-  // Restaurant endpoints
+
+  
   getRestaurants: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return fetch(`${API_BASE_URL}/restaurants?${queryString}`)
@@ -21,7 +22,7 @@ export const apiService = {
       .then(handleResponse);
   },
 
-  // Analytics endpoints
+  
   getRestaurantTrends: (restaurantId, startDate, endDate) => {
     const params = new URLSearchParams({
       start_date: startDate,

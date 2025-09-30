@@ -31,16 +31,23 @@ const RestaurantAnalytics = () => {
     const [loading, setLoading] = useState(false);
     const [startDate, setStartDate] = useState('2025-06-22');
     const [endDate, setEndDate] = useState('2025-06-28');
+    const [tempStartDate, setTempStartDate] = useState('2025-06-22');
+    const [tempEndDate, setTempEndDate] = useState('2025-06-28');
+
+
 
     useEffect(() => {
-        fetchAnalytics();
-    }, [restaurantId, startDate, endDate]);
+        fetchAnalytics(startDate, endDate);
+    }, [restaurantId]);
 
-    const fetchAnalytics = async () => {
+    const fetchAnalytics = async (start, end) => {
         setLoading(true);
         try {
-            const response = await apiService.getRestaurantTrends(restaurantId, startDate, endDate);
+            const response = await apiService.getRestaurantTrends(restaurantId, start, end);
             setTrends(response);
+
+            setStartDate(start);
+            setEndDate(end);
         } catch (error) {
             console.error('Error fetching analytics:', error);
         } finally {
@@ -48,8 +55,26 @@ const RestaurantAnalytics = () => {
         }
     };
 
-    if (loading) return <div className="loading">Loading analytics...</div>;
-    if (!trends) return <div>No data found</div>;
+    const handleApplyDates = () => {
+        if (tempStartDate && tempEndDate) {
+            fetchAnalytics(tempStartDate, tempEndDate);
+        }
+    };
+
+
+    if (loading) {
+        return (
+            <div className="loading">
+                <div className="loading-spinner"></div>
+                Loading analytics...
+            </div>
+        );
+    }
+
+
+    if (!trends) {
+        return <div className="no-data">No data found</div>;
+    }
 
     const chartData = {
         labels: trends.trends.map(t => t.date),
@@ -101,14 +126,26 @@ const RestaurantAnalytics = () => {
             <div className="date-range">
                 <input
                     type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    value={tempStartDate}
+                    onChange={(e) => setTempStartDate(e.target.value)}
                 />
                 <input
                     type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    value={tempEndDate}
+                    onChange={(e) => setTempEndDate(e.target.value)}
                 />
+                <button
+                    onClick={handleApplyDates}
+                    className="btn btn-primary"
+                    disabled={loading}
+                >
+                    Apply Dates
+                </button>
+            </div>
+
+            {/* Current Date Range Display */}
+            <div className="current-date-range">
+                <small>Showing data from <strong>{startDate}</strong> to <strong>{endDate}</strong></small>
             </div>
 
             {/* Summary */}
@@ -152,7 +189,7 @@ const RestaurantAnalytics = () => {
                             <td>{day.ordersCount}</td>
                             <td>₹{day.revenue?.toFixed(2)}</td>
                             <td>₹{day.avgOrderValue?.toFixed(2)}</td>
-                            <td>{day.peakHour}:00</td>
+                            <td>{day.peakHour ? `${day.peakHour}:00` : 'No data'}</td>
                         </tr>
                     ))}
                 </tbody>

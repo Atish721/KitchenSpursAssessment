@@ -64,7 +64,9 @@ body {
 }
 
 .filters input,
-.filters select {
+.filters select,
+.filters-grid input,
+.filters-grid select {
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -189,9 +191,13 @@ body {
 }
 
 .date-range input {
-  padding: 8px 12px;
+  /* padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px; */
+    padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 14px;
 }
 
 /* Top Restaurants */
@@ -226,4 +232,70 @@ body {
   padding: 40px;
   color: #666;
   font-size: 16px;
+}
+
+
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: white;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    border-color: #3498db;
+}
+
+.pagination-btn.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.pagination-btn:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+.pagination-ellipsis {
+    padding: 8px 12px;
+    color: #6c757d;
+}
+
+.pagination-info {
+    text-align: center;
+    margin: 15px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 3px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
 }
