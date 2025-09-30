@@ -1,0 +1,35 @@
+{
+    "version": 2,
+    "framework": null,
+    "functions": {
+        "api/index.php": { "runtime": "vercel-php@0.6.0" }
+    },
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/api/index.php"
+        }
+    ],
+    "env": {
+        "APP_ENV": "production",
+        "APP_DEBUG": "true",
+        "APP_URL": "https://your.url.from.vercel.app",
+        "APP_KEY": "base64:90y9+v2p8BSr5AiCO5QlfcFPiPE4Bmgit2lkPOz1e58=",
+
+        "APP_CONFIG_CACHE": "/tmp/config.php",
+        "APP_EVENTS_CACHE": "/tmp/events.php",
+        "APP_PACKAGES_CACHE": "/tmp/packages.php",
+        "APP_ROUTES_CACHE": "/tmp/routes.php",
+        "APP_SERVICES_CACHE": "/tmp/services.php",
+        "VIEW_COMPILED_PATH": "/tmp",
+        "CACHE_DRIVER": "array",
+        "LOG_CHANNEL": "stderr",
+        "DB_CONNECTION":"mysql",
+        "DB_HOST":"im56gv.h.filess.io",
+        "DB_PORT":"61002",
+        "DB_DATABASE":"KitchenSpurs_prettyyes",
+        "DB_USERNAME":"KitchenSpurs_prettyyes",
+        "DB_PASSWORD":"4dc3ad94833cdf7123b945f31e73761d05b3beb2",
+        "SESSION_DRIVER":"file"
+    }
+}
